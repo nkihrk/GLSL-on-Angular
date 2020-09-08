@@ -1,0 +1,47 @@
+.container {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-direction: column;
+	width: 100%;
+	height: 100vh;
+	background-color: #fefcfb;
+
+	header {
+		margin-bottom: 30px;
+
+		a,
+		a:hover,
+		a:active,
+		a:visited {
+			color: #333333;
+		}
+	}
+
+	.viewer {
+		border: solid 1px rgba(#333333, 0.1);
+		border-radius: 10px;
+		box-shadow: 8px 8px 6px -6px rgba(#333333, 0.1);
+		padding: 30px;
+
+		.wrapper {
+			width: 1200px;
+			height: 700px;
+			overflow: hidden;
+			border-radius: 10px;
+
+			canvas {
+				width: 100%;
+				height: 100%;
+				background-color: #dee2e6;
+			}
+		}
+	}
+
+	footer {
+		display: flex;
+		justify-content: center;
+		margin-top: 50px;
+		font-weight: initial;
+	}
+}
