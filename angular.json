@@ -3,7 +3,7 @@
 	"version": 1,
 	"newProjectRoot": "projects",
 	"projects": {
-		"klab-inter-glsl": {
+		"GLSL-for-Angular": {
 			"projectType": "application",
 			"schematics": {
 				"@schematics/angular:component": {
@@ -17,7 +17,7 @@
 				"build": {
 					"builder": "@angular-devkit/build-angular:browser",
 					"options": {
-						"outputPath": "dist/klab-inter-glsl",
+						"outputPath": "dist",
 						"index": "src/index.html",
 						"main": "src/main.ts",
 						"polyfills": "src/polyfills.ts",
@@ -61,18 +61,18 @@
 				"serve": {
 					"builder": "@angular-devkit/build-angular:dev-server",
 					"options": {
-						"browserTarget": "klab-inter-glsl:build"
+						"browserTarget": "GLSL-for-Angular:build"
 					},
 					"configurations": {
 						"production": {
-							"browserTarget": "klab-inter-glsl:build:production"
+							"browserTarget": "GLSL-for-Angular:build:production"
 						}
 					}
 				},
 				"extract-i18n": {
 					"builder": "@angular-devkit/build-angular:extract-i18n",
 					"options": {
-						"browserTarget": "klab-inter-glsl:build"
+						"browserTarget": "GLSL-for-Angular:build"
 					}
 				},
 				"test": {
@@ -99,16 +99,16 @@
 					"builder": "@angular-devkit/build-angular:protractor",
 					"options": {
 						"protractorConfig": "e2e/protractor.conf.js",
-						"devServerTarget": "klab-inter-glsl:serve"
+						"devServerTarget": "GLSL-for-Angular:serve"
 					},
 					"configurations": {
 						"production": {
-							"devServerTarget": "klab-inter-glsl:serve:production"
+							"devServerTarget": "GLSL-for-Angular:serve:production"
 						}
 					}
 				}
 			}
 		}
 	},
-	"defaultProject": "klab-inter-glsl"
+	"defaultProject": "GLSL-for-Angular"
 }
