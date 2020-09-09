@@ -6,7 +6,7 @@
 	</header>
 
 	<div class="viewer">
-		<div #wrapper class="wrapper">
+		<div #wrapper appPointer (pointerData)="onPointerEvent($event)" class="wrapper">
 			<canvas #target></canvas>
 		</div>
 	</div>
