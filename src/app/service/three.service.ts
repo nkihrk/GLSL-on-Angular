@@ -1,9 +1,11 @@
 import { Injectable } from '@angular/core';
 import * as THREE from 'three';
 import { HttpClient } from '@angular/common/http';
-import { HttpErrorResponse, HttpHeaders, HttpResponse } from '@angular/common/http';
-
-import { Observable, throwError } from 'rxjs';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
+import { GlitchPass } from 'three/examples/jsm/postprocessing/GlitchPass.js';
+import { switchMap } from 'rxjs/operators';
 
 @Injectable({
 	providedIn: 'root'
@@ -11,6 +13,10 @@ import { Observable, throwError } from 'rxjs';
 export class ThreeService {
 	private wrapper: HTMLDivElement;
 	private target: HTMLCanvasElement;
+
+	private vertUrl = 'shader.vert';
+	private fragUrl = 'lighting.frag';
+	private postProcUrl = 'post-processing.frag';
 
 	private _iMouse = {
 		x: 0,
@@ -23,50 +29,77 @@ export class ThreeService {
 	private dolly: THREE.Group;
 	private camera: THREE.Camera;
 	private clock: THREE.Clock;
-	private renderer: THREE.Renderer;
+	private renderer: THREE.WebGLRenderer;
+	private composer: EffectComposer;
 
 	private vertex: string;
 	private fragment: string;
 	private uniforms: {
-		resolution: any;
-		cameraWorldMatrix: any;
-		cameraProjectionMatrixInverse: any;
-		iTime: any;
-		iResolution: any;
-		iChannel0: any;
-		iMouse: any;
+		tDiffuse: { value: any };
+		resolution: { value: any };
+		cameraWorldMatrix: { value: any };
+		cameraProjectionMatrixInverse: { value: any };
+		iTime: { value: any };
+		iResolution: { value: any };
+		iChannel0: { value: any };
+		iMouse: { value: any };
 	};
 
 	constructor(private http: HttpClient) {
-		this.http.get('assets/vert/shader.vert', { responseType: 'text' as 'json' }).subscribe(($vert: string) => {
-			this.vertex = $vert.toString();
+		this.http
+			.get('assets/vert/' + this.vertUrl, { responseType: 'text' as 'json' })
+			.pipe(
+				switchMap(($vert: string) => {
+					this.vertex = $vert;
+					return this.http.get('assets/frag/' + this.fragUrl, { responseType: 'text' as 'json' });
+				})
+			)
+			.pipe(
+				switchMap(($frag: string) => {
+					this.fragment = $frag;
 
-			this.http.get('assets/frag/mandelbulb.frag', { responseType: 'text' as 'json' }).subscribe(($frag: string) => {
-				this.fragment = $frag.toString();
+					const loader = new THREE.TextureLoader();
+					const texture = loader.load('https://threejsfundamentals.org/threejs/resources/images/bayer.png');
+					texture.minFilter = THREE.NearestFilter;
+					texture.magFilter = THREE.NearestFilter;
+					texture.wrapS = THREE.RepeatWrapping;
+					texture.wrapT = THREE.RepeatWrapping;
 
-				const loader = new THREE.TextureLoader();
-				const texture = loader.load('https://threejsfundamentals.org/threejs/resources/images/bayer.png');
-				texture.minFilter = THREE.NearestFilter;
-				texture.magFilter = THREE.NearestFilter;
-				texture.wrapS = THREE.RepeatWrapping;
-				texture.wrapT = THREE.RepeatWrapping;
+					// Initialize uniforms
+					this.uniforms = {
+						tDiffuse: { value: null },
+						resolution: { value: new THREE.Vector2(this.wrapper.clientWidth, this.wrapper.clientHeight) },
+						cameraWorldMatrix: { value: this.camera.matrixWorld },
+						cameraProjectionMatrixInverse: { value: new THREE.Matrix4().getInverse(this.camera.projectionMatrix) },
+						iTime: { value: 0 },
+						iResolution: { value: new THREE.Vector3() },
+						iChannel0: { value: texture },
+						iMouse: { value: { x: 0, y: 0, z: 0, w: 1 } }
+					};
+					// Load vertex and fragment
+					this.addBasicPlane();
 
-				// Initialize uniforms
-				this.uniforms = {
-					resolution: { value: new THREE.Vector2(this.wrapper.clientWidth, this.wrapper.clientHeight) },
-					cameraWorldMatrix: { value: this.camera.matrixWorld },
-					cameraProjectionMatrixInverse: { value: new THREE.Matrix4().getInverse(this.camera.projectionMatrix) },
-					iTime: { value: 0 },
-					iResolution: { value: new THREE.Vector3() },
-					iChannel0: { value: texture },
-					iMouse: { value: { x: 0, y: 0, z: 0, w: 1 } }
+					this.composer.addPass(new RenderPass(this.scene, this.camera));
+
+					return this.http.get('assets/frag/' + this.postProcUrl, { responseType: 'text' as 'json' });
+				})
+			)
+			.subscribe(($frag: string) => {
+				const copyShader = {
+					uniforms: this.uniforms,
+					vertexShader: this.vertex,
+					fragmentShader: $frag
 				};
-				// Load vertex and fragment
-				this.addBasicPlane();
-				// Render shader
+				const shaderPass = new ShaderPass(copyShader);
+				shaderPass.renderToScreen = true;
+				this.composer.addPass(shaderPass);
+
+				// Glitch effect
+				//const glitchPass = new GlitchPass();
+				//this.composer.addPass(glitchPass);
+
 				this.render();
 			});
-		});
 	}
 
 	init($wrapper: HTMLDivElement, $target: HTMLCanvasElement): void {
@@ -86,6 +119,8 @@ export class ThreeService {
 
 		this.renderer = new THREE.WebGLRenderer({ canvas: this.target });
 		this.renderer.setSize($wrapper.clientWidth, $wrapper.clientHeight);
+
+		this.composer = new EffectComposer(this.renderer);
 	}
 
 	onMove($x: number, $y: number): void {
@@ -130,6 +165,7 @@ export class ThreeService {
 		this.uniforms.iMouse.value.x = this._iMouse.x;
 		this.uniforms.iMouse.value.y = this._iMouse.y;
 
-		this.renderer.render(this.scene, this.camera);
+		//this.renderer.render(this.scene, this.camera);
+		this.composer.render();
 	}
 }
