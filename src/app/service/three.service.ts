@@ -15,8 +15,8 @@ export class ThreeService {
 	private target: HTMLCanvasElement;
 
 	private vertUrl = 'shader.vert';
-	private fragUrl = 'lighting.frag';
-	private postProcUrl = 'post-processing.frag';
+	private fragUrl = 'work/water.frag';
+	private postProcUrl = 'work/post-proc.frag';
 
 	private _iMouse = {
 		x: 0,
