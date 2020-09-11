@@ -10,7 +10,7 @@ This project is created for KLab Expert Camp 2020.
 
 <br>
 
-![preview](./src/assets/image.png)
+![preview](./src/assets/output.gif)
 
 # Document
 
