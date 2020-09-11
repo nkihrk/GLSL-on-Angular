@@ -12,9 +12,6 @@ This project is created for KLab Expert Camp 2020.
 
 ![preview](./src/assets/output.gif)
 
-# Document
-
-Currently working on
 <br><br>
 
 # License
