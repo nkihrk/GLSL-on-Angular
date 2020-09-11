@@ -33,11 +33,12 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
   float sumW = 0.0;
 
   col = textureLod(tDiffuse, vUv, 0.0);
+  // vec2 d = (disp(p*0.8, 0.0, 10.)*0.4 + disp(p*1.6,100.,20.0)*0.2) * 0.5;
 
   vec2 p = vUv * 2. - 1.;
-  vec2 uvR = (p + p * dot(p, p) * 0.01) + 1. + sin(iTime) * 1.5;
-  vec2 uvG = (p + p * dot(p, p) * 0.02) + 1. + sin(iTime) * 1.5;
-  vec2 uvB = (p + p * dot(p, p) * 0.03) + 1. + sin(iTime) * 1.5;
+  vec2 uvR = (p + p * dot(p, p) * 0.01) + 1.;
+  vec2 uvG = (p + p * dot(p, p) * 0.02) + 1.;
+  vec2 uvB = (p + p * dot(p, p) * 0.03) + 1.;
   float r = textureLod(tDiffuse, uvR / 2., 0.).r;
   float g = textureLod(tDiffuse, uvG / 2., 0.).g;
   float b = textureLod(tDiffuse, uvB / 2., 0.).b;

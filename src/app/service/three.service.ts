@@ -26,9 +26,7 @@ export class ThreeService {
 	};
 
 	private scene: THREE.Scene;
-	private dolly: THREE.Group;
 	private camera: THREE.Camera;
-	private clock: THREE.Clock;
 	private renderer: THREE.WebGLRenderer;
 	private composer: EffectComposer;
 
@@ -36,8 +34,6 @@ export class ThreeService {
 	private fragment: string;
 	private uniforms: {
 		tDiffuse: { value: any };
-		cameraWorldMatrix: { value: any };
-		cameraProjectionMatrixInverse: { value: any };
 		iTime: { value: any };
 		iResolution: { value: any };
 		iChannel0: { value: any };
@@ -67,8 +63,6 @@ export class ThreeService {
 					// Initialize uniforms
 					this.uniforms = {
 						tDiffuse: { value: null },
-						cameraWorldMatrix: { value: this.camera.matrixWorld },
-						cameraProjectionMatrixInverse: { value: new THREE.Matrix4().getInverse(this.camera.projectionMatrix) },
 						iTime: { value: 0 },
 						iResolution: { value: new THREE.Vector2(this.wrapper.clientWidth, this.wrapper.clientHeight) },
 						iChannel0: { value: texture },
@@ -106,14 +100,8 @@ export class ThreeService {
 
 		this.scene = new THREE.Scene();
 
-		this.dolly = new THREE.Group();
-		this.scene.add(this.dolly);
-
-		this.clock = new THREE.Clock();
-
 		this.camera = new THREE.PerspectiveCamera(60, $wrapper.clientWidth / $wrapper.clientHeight, 0.1, 1000);
 		this.camera.position.z = 4;
-		this.dolly.add(this.camera);
 
 		this.renderer = new THREE.WebGLRenderer({ canvas: this.target });
 		this.renderer.setSize($wrapper.clientWidth, $wrapper.clientHeight);
@@ -128,6 +116,8 @@ export class ThreeService {
 		this._iMouse.x = x;
 		this._iMouse.y = y;
 	}
+
+	record(): void {}
 
 	private addBasicPlane(): void {
 		const geometry: THREE.PlaneBufferGeometry = new THREE.PlaneBufferGeometry(2.0, 2.0);
@@ -153,9 +143,6 @@ export class ThreeService {
 	}
 
 	private _render($t: number): void {
-		const elapsedTime = this.clock.getElapsedTime();
-		this.dolly.position.z = -elapsedTime;
-
 		$t *= 0.001;
 
 		this.uniforms.iResolution.value.set(this.target.width, this.target.height, 1);

@@ -41,9 +41,6 @@ export class PointerDirective {
 
 	// Down event
 	_onDown($e: any): void {
-		let clientX: number;
-		let clientY: number;
-
 		this._emitData($e.clientX, $e.clientY, 'down');
 	}
 

@@ -23,6 +23,7 @@ export class ViewerComponent implements OnInit {
 			this.isEnabledMove = true;
 		} else if ($e.state === 'up') {
 			this.isEnabledMove = false;
+			this.three.onMove(0, 0);
 		} else if ($e.state === 'move' && this.isEnabledMove) {
 			this.three.onMove($e.x, $e.y);
 		}
