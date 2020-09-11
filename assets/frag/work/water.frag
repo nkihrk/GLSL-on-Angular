@@ -9,6 +9,7 @@ uniform vec4 iMouse;
 #define MAX_DIST 100.
 #define SURFACE_DIST .01
 #define HASHSCALE4 vec4(.1031, .1030, .0973, .1099)
+#define F4 0.309016994374947451
 
 float sdSphere(vec3 p, vec4 s) { return length(p - s.xyz) - s.w; }
 
@@ -36,35 +37,25 @@ vec4 grad4(float j, vec4 ip) {
   return p;
 }
 
-// (sqrt(5) - 1)/4 = F4, used once below
-#define F4 0.309016994374947451
-
 float snoise(vec4 v) {
-  const vec4 C = vec4(0.138196601125011,   // (5 - sqrt(5))/20  G4
-                      0.276393202250021,   // 2 * G4
-                      0.414589803375032,   // 3 * G4
-                      -0.447213595499958); // -1 + 4 * G4
+  const vec4 C = vec4(0.138196601125011, 0.276393202250021, 0.414589803375032,
+                      -0.447213595499958);
 
   // First corner
   vec4 i = floor(v + dot(v, vec4(F4)));
   vec4 x0 = v - i + dot(i, C.xxxx);
 
-  // Other corners
-
-  // Rank sorting originally contributed by Bill Licea-Kane, AMD (formerly ATI)
   vec4 i0;
   vec3 isX = step(x0.yzw, x0.xxx);
   vec3 isYZ = step(x0.zww, x0.yyz);
-  //  i0.x = dot( isX, vec3( 1.0 ) );
+
   i0.x = isX.x + isX.y + isX.z;
   i0.yzw = 1.0 - isX;
-  //  i0.y += dot( isYZ.xy, vec2( 1.0 ) );
   i0.y += isYZ.x + isYZ.y;
   i0.zw += 1.0 - isYZ.xy;
   i0.z += isYZ.z;
   i0.w += 1.0 - isYZ.z;
 
-  // i0 now contains the unique values 0,1,2,3 in each channel
   vec4 i3 = clamp(i0, 0.0, 1.0);
   vec4 i2 = clamp(i0 - 1.0, 0.0, 1.0);
   vec4 i1 = clamp(i0 - 2.0, 0.0, 1.0);
@@ -82,8 +73,6 @@ float snoise(vec4 v) {
                             i.y + vec4(i1.y, i2.y, i3.y, 1.0)) +
                     i.x + vec4(i1.x, i2.x, i3.x, 1.0));
 
-  // Gradients: 7x7x6 points over a cube, mapped onto a 4-cross polytope
-  // 7*7*6 = 294, which is close to the ring size 17*17 = 289.
   vec4 ip = vec4(1.0 / 294.0, 1.0 / 49.0, 1.0 / 7.0, 0.0);
 
   vec4 p0 = grad4(j0, ip);
@@ -162,31 +151,13 @@ vec4 shade(vec3 normal, vec3 pos, vec3 rd) {
   return final;
 }
 
-float sum = 0.;
-
-float eio(float t) {
-  return t == 0.0 || t == 1.0
-             ? t
-             : t < 0.5 ? +0.5 * pow(2.0, (20.0 * t) - 10.0)
-                       : -0.5 * pow(2.0, 10.0 - (t * 20.0)) + 1.0;
-}
-
-float tl(float val, float offset, float range) {
-  float im = sum + offset;
-  float ix = im + range;
-  sum += offset + range;
-  return clamp((val - im) / (ix - im), 0.0, 1.0);
-}
-
 float map(vec3 p) {
   float s = 0.;
-  float t = tl(iTime, 0.5, 1.0);
 
   float sphereNoise = snoise(vec4(p.x, p.y + iTime * 0.5, p.z, 1.)) * 0.15;
   s = sdSphere(p, vec4(0.0, 1, 0.0, 1)) + sphereNoise * 1.2 -
       0.2 * exp(cos(iTime / 2. - PI));
 
-  //  if (iTime > 10.) {
   for (int i = 0; i < 15; ++i) {
     vec4 rnd = hash41(100.0 + float(i));
     vec3 rndPos = 1.0 * (normalize(rnd.xyz) - vec3(0.5));
@@ -202,9 +173,6 @@ float map(vec3 p) {
   }
 
   s += 0.002 * sin(20.0 * p.x + 10.0 * iTime);
-  //}
-
-  // s = smin(s, s2, 0.4);
 
   return s;
 }
