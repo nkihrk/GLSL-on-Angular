@@ -1,4 +1,4 @@
-uniform vec3 iResolution;
+uniform vec2 iResolution;
 uniform float iTime;
 uniform vec4 iMouse;
 
@@ -12,19 +12,7 @@ uniform vec4 iMouse;
 
 float sdSphere(vec3 p, vec4 s) { return length(p - s.xyz) - s.w; }
 
-float ballshape(vec3 p, vec4 s) {
-  float d = length(p - s.xyz) - s.w;
-  d += 0.1 * sin(10.0 * p.x + iTime * 2.0) * sin(10.0 * p.y + iTime) *
-       sin(10.0 * p.z + iTime * 3.0);
-  return d;
-}
-
-float sdPlane(vec3 p) { return p.y + 1.; }
-
-float sdBox(vec3 p, vec3 b, vec4 s) {
-  vec3 q = abs(p - s.xyz) - b;
-  return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0);
-}
+float sdPlane(vec3 p) { return p.y; }
 
 vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
 
@@ -83,11 +71,6 @@ float snoise(vec4 v) {
   vec4 i2 = clamp(i0 - 1.0, 0.0, 1.0);
   vec4 i1 = clamp(i0 - 2.0, 0.0, 1.0);
 
-  //  x0 = x0 - 0.0 + 0.0 * C.xxxx
-  //  x1 = x0 - i1  + 1.0 * C.xxxx
-  //  x2 = x0 - i2  + 2.0 * C.xxxx
-  //  x3 = x0 - i3  + 3.0 * C.xxxx
-  //  x4 = x0 - 1.0 + 4.0 * C.xxxx
   vec4 x1 = x0 - i1 + C.xxxx;
   vec4 x2 = x0 - i2 + C.yyyy;
   vec4 x3 = x0 - i3 + C.zzzz;
@@ -156,6 +139,8 @@ vec4 getSky(vec3 rd) {
 }
 
 vec4 shade(vec3 normal, vec3 pos, vec3 rd) {
+  vec4 final = vec4(0.);
+
   float ReflectionFresnel = 0.99;
   float fresnel =
       ReflectionFresnel * pow(1.0 - clamp(dot(-rd, normal), 0.0, 1.0), 5.0) +
@@ -171,16 +156,20 @@ vec4 shade(vec3 normal, vec3 pos, vec3 rd) {
   vec3 lightDir = normalize(vec3(-1.0, -1.0, 0.5));
   vec3 reflectDir = reflect(-lightDir, normal);
   float spec = pow(max(dot(rd, reflectDir), 0.0), 5.0);
+  final = clamp(col, 0.0, 1.0) + spec * vec4(0, 1, 1, 0) * 0.2;
 
-  return clamp(col, 0.0, 1.0) + spec * vec4(0, 1, 1, 0) * 0.2;
+  return final;
 }
 
 float map(vec3 p) {
   float sphereNoise = snoise(vec4(p.x, p.y + iTime * 0.5, p.z, 1.)) * 0.15;
-  float s = sdSphere(p, vec4(0.0, 1, 0.0, 1)) + sphereNoise * 1.4 -
+  float s = sdSphere(p, vec4(0.0, 1, 0.0, 1)) + sphereNoise * 1.2 -
             0.2 * exp(cos(iTime / 2. - PI));
 
-  for (int i = 0; i < 20; ++i) {
+  // float s2 = sdPlane(p) + sphereNoise * 1.2 - 0.2 * exp(cos(iTime / 2. -
+  // PI));
+
+  for (int i = 0; i < 12; ++i) {
     vec4 rnd = hash41(100.0 + float(i));
     vec3 rndPos = 2.0 * (normalize(rnd.xyz) - vec3(0.5));
     rndPos.y *= 2.0;
@@ -189,11 +178,13 @@ float map(vec3 p) {
     vec3 offset = mix(0.1 * rndPos, 15.0 * rndPos, phase);
     float rnd2 = fract(rnd.x + rnd.y);
     float s0 = length(p + offset) -
-               0.25 * mix(0.8 + 0.2 * rnd2, 0.2 + 0.8 * rnd2, phase);
+               0.3 * mix(0.8 + 0.2 * rnd2, 0.2 + 0.8 * rnd2, phase);
+
     s = smin(s, s0, 0.4);
   }
 
   s += 0.002 * sin(20.0 * p.x + 10.0 * iTime);
+  // s = smin(s, s2, 0.4);
 
   return s;
 }
@@ -205,8 +196,30 @@ vec3 calcNormal(vec3 p) { // by iq
                         map(p + e.yyx) - map(p - e.yyx)));
 }
 
-vec3 trace(vec3 ro, vec3 rd) {
+float shadow(vec3 p, vec3 l) {
+  float t = 0.01;
+  float t_max = 20.0;
+
+  float res = 1.0;
+  for (int i = 0; i < 128; ++i) {
+    if (t > t_max)
+      break;
+
+    float d = map(p + t * l);
+    if (d < 0.001) {
+      return 0.0;
+    }
+    t += d;
+    res = min(res, 10.0 * d / t);
+  }
+
+  return res;
+}
+
+vec4 trace(vec3 ro, vec3 rd) {
   float dO = 0.; // Distane Origin
+
+  vec3 col = vec3(0.);
   for (int i = 0; i < MAX_STEPS; i++) {
     vec3 p = ro + rd * dO;
     float ds = map(p); // ds is Distance Scene
@@ -215,16 +228,17 @@ vec3 trace(vec3 ro, vec3 rd) {
       vec3 lightPos = vec3(2.0, -5.0, 3.0);
       vec3 lightDir = normalize(p - lightPos);
 
-      return shade(normal, p, rd).xyz;
+      return vec4(vec3(shade(normal, p, rd).xyz + shadow(p, rd)), 1.0);
     }
 
     if (ds > MAX_DIST)
       break;
 
     dO += ds;
+    col = .99 * col + .08 * vec3(ds, ds, ds * ds * ds);
   }
 
-  return vec3(0.99, 0.94, 0.92);
+  return vec4(0.99, 0.94, 0.92, 1.0);
 }
 
 mat3 camera(vec3 ro, vec3 ta, float cr) {
@@ -242,14 +256,20 @@ void main() {
   // vec3 cameraPos = vec3(-5.0, 2.5, -5.0);
   vec3 cameraPos = vec3(cos(iTime * 0.5) * 5.0, 2.5, sin(iTime * 0.5) * 5.0);
 
+  // vec2 m = iMouse.xy / iResolution.xy;
+  // m.y += 0.3;
+  // m.x += 0.72;
+  // vec3 cameraPos =
+  //    5.0 * normalize(vec3(sin(5.0 * m.x), 1.0 * m.y, cos(5.0 * m.x)));
+
   vec3 ro = cameraPos;
   vec3 ta = targetPos;
   mat3 c = camera(ro, ta, 0.0);
   vec3 rd = c * normalize(vec3(uv, 1));
 
-  vec3 color = trace(ro, rd);
+  vec4 color = trace(ro, rd);
   // color = calcNormal(p);
 
   // Set the output color
-  gl_FragColor = vec4(color, 1.0);
+  gl_FragColor = color;
 }

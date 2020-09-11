@@ -36,7 +36,6 @@ export class ThreeService {
 	private fragment: string;
 	private uniforms: {
 		tDiffuse: { value: any };
-		resolution: { value: any };
 		cameraWorldMatrix: { value: any };
 		cameraProjectionMatrixInverse: { value: any };
 		iTime: { value: any };
@@ -68,11 +67,10 @@ export class ThreeService {
 					// Initialize uniforms
 					this.uniforms = {
 						tDiffuse: { value: null },
-						resolution: { value: new THREE.Vector2(this.wrapper.clientWidth, this.wrapper.clientHeight) },
 						cameraWorldMatrix: { value: this.camera.matrixWorld },
 						cameraProjectionMatrixInverse: { value: new THREE.Matrix4().getInverse(this.camera.projectionMatrix) },
 						iTime: { value: 0 },
-						iResolution: { value: new THREE.Vector3() },
+						iResolution: { value: new THREE.Vector2(this.wrapper.clientWidth, this.wrapper.clientHeight) },
 						iChannel0: { value: texture },
 						iMouse: { value: { x: 0, y: 0, z: 0, w: 1 } }
 					};
