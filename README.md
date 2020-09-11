@@ -5,7 +5,7 @@ GLSL implementation in Angular (10+).
 <br>
 This project is created for KLab Expert Camp 2020.
 <br>
-<a href="https://nkihrk.github.io/GLSL-for-Angular/" target="_blank"><b>DEMO</b></a>
+<a href="https://nkihrk.github.io/GLSL-in-Angular/" target="_blank"><b>DEMO</b></a>
 </p>
 
 <br>
