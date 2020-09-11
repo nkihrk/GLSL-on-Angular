@@ -169,9 +169,9 @@ float map(vec3 p) {
   // float s2 = sdPlane(p) + sphereNoise * 1.2 - 0.2 * exp(cos(iTime / 2. -
   // PI));
 
-  for (int i = 0; i < 12; ++i) {
+  for (int i = 0; i < 15; ++i) {
     vec4 rnd = hash41(100.0 + float(i));
-    vec3 rndPos = 2.0 * (normalize(rnd.xyz) - vec3(0.5));
+    vec3 rndPos = 1.0 * (normalize(rnd.xyz) - vec3(0.5));
     rndPos.y *= 2.0;
     float timeOffset = rnd.w;
     float phase = fract(timeOffset - 0.25 * exp(cos(iTime / 5. - PI)));
@@ -223,7 +223,7 @@ vec4 trace(vec3 ro, vec3 rd) {
   for (int i = 0; i < MAX_STEPS; i++) {
     vec3 p = ro + rd * dO;
     float ds = map(p); // ds is Distance Scene
-    if (ds < SURFACE_DIST) {
+    if (abs(ds) < SURFACE_DIST) {
       vec3 normal = calcNormal(p);
       vec3 lightPos = vec3(2.0, -5.0, 3.0);
       vec3 lightDir = normalize(p - lightPos);
