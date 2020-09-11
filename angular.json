@@ -3,7 +3,7 @@
 	"version": 1,
 	"newProjectRoot": "projects",
 	"projects": {
-		"GLSL-for-Angular": {
+		"GLSL-in-Angular": {
 			"projectType": "application",
 			"schematics": {
 				"@schematics/angular:component": {
@@ -61,18 +61,18 @@
 				"serve": {
 					"builder": "@angular-devkit/build-angular:dev-server",
 					"options": {
-						"browserTarget": "GLSL-for-Angular:build"
+						"browserTarget": "GLSL-in-Angular:build"
 					},
 					"configurations": {
 						"production": {
-							"browserTarget": "GLSL-for-Angular:build:production"
+							"browserTarget": "GLSL-in-Angular:build:production"
 						}
 					}
 				},
 				"extract-i18n": {
 					"builder": "@angular-devkit/build-angular:extract-i18n",
 					"options": {
-						"browserTarget": "GLSL-for-Angular:build"
+						"browserTarget": "GLSL-in-Angular:build"
 					}
 				},
 				"test": {
@@ -99,16 +99,16 @@
 					"builder": "@angular-devkit/build-angular:protractor",
 					"options": {
 						"protractorConfig": "e2e/protractor.conf.js",
-						"devServerTarget": "GLSL-for-Angular:serve"
+						"devServerTarget": "GLSL-in-Angular:serve"
 					},
 					"configurations": {
 						"production": {
-							"devServerTarget": "GLSL-for-Angular:serve:production"
+							"devServerTarget": "GLSL-in-Angular:serve:production"
 						}
 					}
 				}
 			}
 		}
 	},
-	"defaultProject": "GLSL-for-Angular"
+	"defaultProject": "GLSL-in-Angular"
 }
