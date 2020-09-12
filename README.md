@@ -36,14 +36,13 @@ $ npm run-script build
 ```
 
 Deploy to GitHub Pages.
+<br>
+(Make sure you set up git and github stuffs, before deploying.)
 
 ```
 $ npm run-script deploy
 ```
 
-<br>
-Make sure you set up git and github stuffs, before deploying.
-<br><br>
 Heads up:
 <br>
 At first time, you'll be asked your password by gh-pages for several times.
