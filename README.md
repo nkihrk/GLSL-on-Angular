@@ -14,6 +14,41 @@ This project is created for KLab Expert Camp 2020.
 
 <br><br>
 
+# Document
+
+Clone the repository
+
+```
+$ git clone git@github.com:nkihrk/GLSL-in-Angular.git
+```
+
+Wake up the dev-server
+
+```
+$ cd GLSL-in-Angular/
+$ npm run-script start
+```
+
+Build the Angular app, and you'll find in the dist folder
+
+```
+$ npm run-script build
+```
+
+Deploy to GitHub Pages.
+<br>
+Make sure you set up git and github stuffs, before deploying.
+<br><br>
+Heads up:
+<br>
+At first time, you'll be asked your password by gh-pages for several times.
+<br>
+Just input your password and procceed it.
+
+```
+$ npm run-script deploy
+```
+
 # License
 
 MIT Licence
