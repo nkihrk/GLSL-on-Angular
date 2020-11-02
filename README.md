@@ -1,7 +1,7 @@
 # <p align="middle">GLSL in Angular</p>
 
 <p align="middle">
-GLSL implementation in Angular (10+).
+GLSL implementation on Angular (10+).
 <br>
 This project is created for KLab Expert Camp 2020.
 <br>
