@@ -1,4 +1,4 @@
-# <p align="middle">GLSL in Angular</p>
+# <p align="middle">GLSL on Angular</p>
 
 <p align="middle">
 GLSL implementation on Angular (10+).
@@ -35,9 +35,9 @@ Build the Angular app, and you'll find in the dist folder
 $ npm run-script build
 ```
 
-Deploy to GitHub Pages.
+Deploy to GitHub Pages
 <br>
-(Make sure you set up git and github stuffs, before deploying.)
+(Make sure you set up git and github stuffs, before deploying)
 
 ```
 $ npm run-script deploy
